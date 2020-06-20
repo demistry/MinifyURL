@@ -4,5 +4,5 @@ package shortener
 type Redirect struct{
 	Code string
 	URL string
-	CreatedAt string
+	CreatedAt int64
 }
