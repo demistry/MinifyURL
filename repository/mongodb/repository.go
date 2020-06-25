@@ -6,6 +6,7 @@ import (
 	"context"
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
@@ -14,6 +15,7 @@ import (
 	// "os"
 )
 
+const redirectCollectionName = "redirects"
 
 type mongoDBRepository struct{
 	client *mongo.Client
@@ -41,7 +43,7 @@ func newMongoClient(mongoURL string, mongoTimeout int) (*mongo.Client,error){
 
 func NewMongoRepository(mongoURL, mongoDB string, timeout int) (shortener.RedirectRepository,error){
 	repo := &mongoDBRepository{
-		timeout: time.Duration(timeout),
+		timeout: time.Duration(timeout) * time.Second,
 		database: mongoDB,
 	} 
 	client,err := newMongoClient(mongoURL,timeout)
@@ -53,27 +55,31 @@ func NewMongoRepository(mongoURL, mongoDB string, timeout int) (shortener.Redire
 }
 
 func (r *mongoDBRepository) Find(code string) (*shortener.Redirect, error){
-	// byteOfData, err := ioutil.ReadFile(r.fileName)
-	// if err != nil{
-	// 	return nil,err
-	// }
-	
-	return nil,nil
+	ctx, cancel := context.WithTimeout(context.Background(), r.timeout)
+	defer cancel()
+	redirect := &shortener.Redirect{}
+	collection := r.client.Database(r.database).Collection(redirectCollectionName)
+	filter := bson.M{"code":code}
+	err := collection.FindOne(ctx,filter).Decode(&redirect)
+	if err != nil{
+		return nil, err
+	}
+	return redirect,nil
 }
 
 
 func (r *mongoDBRepository) Store(redirect *shortener.Redirect) error{
-	// file,err := os.Create(r.filePath)
-	// if err != nil{
-	// 	log.Fatal("Failed to create file in repository")
-	// 	return err
-	// }
-	// enc, err := r.serializer.Encode(redirect)
-	// if err != nil{
-	// 	return err
-	// }
-	// file.Write(enc)
-	// defer file.Close()
+	ctx, cancel := context.WithTimeout(context.Background(), r.timeout)
+	defer cancel()
+	collection := r.client.Database(r.database).Collection(redirectCollectionName)
+	_, err := collection.InsertOne(ctx, bson.M{
+		"code" : redirect.Code,
+		"url" : redirect.URL,
+		"createdAt" : redirect.CreatedAt,
+	})
+	if err != nil{
+		return err
+	}
 	return nil
 }
 
