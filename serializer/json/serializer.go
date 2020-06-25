@@ -1,4 +1,4 @@
-package json
+package jsonserializer
 
 import (
 	"MinifyURL/shortener"
@@ -8,23 +8,25 @@ import (
 
 type Redirect struct{}
 
-func newSerializer(input *shor) *RedirectSerializer{
+func newJsonSerializer() *shortener.RedirectSerializer{
 	//write code to create a new serializer
+	// return nil
 	return nil
 }
 
 func (r *Redirect) Decode(input []byte)(*shortener.Redirect,error){
 	redirect := &shortener.Redirect{}
-	if err := json.Unmarshal(input, redirect), err != nil{
-		return nil, errors.New("Could not decode redirect object from bytes")
+	err := json.Unmarshal(input, redirect)
+	if err != nil{
+		return nil, errors.New("Could not decode redirect object from bytes with error")
 	}
 	return redirect,nil
 }
 
-func (r *Redirect) Encode(input *Redirect) ([]byte, error){
+func (r *Redirect) Encode(input *shortener.Redirect) ([]byte, error){
 	encodedData, err := json.Marshal(input)
 	if err != nil{
-		return nil,err.New("Could not encode data to bytes...")
+		return nil,err
 	}
 	return encodedData,nil
 }
