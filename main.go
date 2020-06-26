@@ -4,7 +4,7 @@ import (
 	h "MinifyURL/api"
 	mr "MinifyURL/repository/mongodb"
 	"MinifyURL/shortener"
-	// "os/signal"
+	"os/signal"
 
 	"github.com/gofiber/fiber"
 
@@ -12,6 +12,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"syscall"
 ) 
 
 func main() {
@@ -31,9 +32,9 @@ func main() {
 	}()
 
 	go func(){
-		// c := make(chan os.Signal, 1)
-		// signal.Notify(c, syscall.SIGINT)
-		// errs <- fmt.Errorf("%s", <- c)
+		c := make(chan os.Signal, 1)
+		signal.Notify(c, syscall.SIGINT)
+		errs <- fmt.Errorf("%s", <- c)
 	}()
 
 	fmt.Printf("Terminating server due to %s", <- errs)
@@ -53,6 +54,7 @@ func createRepo() shortener.RedirectRepository{
 	mongoTimeout, _ := strconv.Atoi(os.Getenv("MONGO_TIMEOUT"))
 	repo,err := mr.NewMongoRepository(mongoURL, mongoDBName, mongoTimeout)
 	if err != nil{
+		fmt.Print("Error associated with creating mongo repo ", err)
 		log.Fatal(err)
 	}
 	return repo
