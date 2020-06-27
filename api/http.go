@@ -47,8 +47,8 @@ func (h *handler) POST(app *fiber.App){
 		if err != nil{
 			log.Fatal("Could not save redirect code")
 		}
-		responseBody,err := h.serializer().Encode(redirect)
-		c.JSON(responseBody)
+		// responseBody,err := h.serializer().Encode(redirect)
+		c.JSON(redirect)
 	})
 }
 

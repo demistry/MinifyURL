@@ -29,6 +29,7 @@ type mongoClient struct{
 }
 
 func newMongoClient(mongoURL string, mongoTimeout int) (*mongo.Client,error){
+	fmt.Println("context deadline ", mongoTimeout)
 	ctx,cancel := context.WithTimeout(context.Background(),time.Duration(mongoTimeout))
 	defer cancel()
 	client,err := mongo.Connect(ctx, options.Client().ApplyURI(mongoURL))
@@ -81,6 +82,7 @@ func (r *mongoDBRepository) Store(redirect *shortener.Redirect) error{
 		"createdAt" : redirect.CreatedAt,
 	})
 	if err != nil{
+		fmt.Println("Error occured with storing ", err)
 		return err
 	}
 	return nil

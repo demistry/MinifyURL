@@ -3,6 +3,7 @@ package shortener
 import (
 	"errors"
 	"time"
+
 	"github.com/teris-io/shortid"
 )
 
@@ -25,7 +26,6 @@ func (r *redirectService) Find(code string) (*Redirect, error){
 
 func (r *redirectService) Store(redirect *Redirect) error{
 	//You can validate input url here before storing
-
 	redirect.Code = shortid.MustGenerate() //generate a unique code for the link
 	redirect.CreatedAt = time.Now().UTC().Unix()
 	return r.redirectRepo.Store(redirect)
