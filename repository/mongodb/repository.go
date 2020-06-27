@@ -4,12 +4,13 @@ import (
 	// jsonserializer "MinifyURL/serializer/json"
 	"MinifyURL/shortener"
 	"context"
+	"fmt"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.mongodb.org/mongo-driver/mongo/readpref"
+	// "go.mongodb.org/mongo-driver/mongo/readpref"
 	// "io/ioutil"
 	// "log"
 	// "os"
@@ -32,12 +33,14 @@ func newMongoClient(mongoURL string, mongoTimeout int) (*mongo.Client,error){
 	defer cancel()
 	client,err := mongo.Connect(ctx, options.Client().ApplyURI(mongoURL))
 	if err != nil{
+		fmt.Println("Error here")
 		return nil, err
 	}
-	err = client.Ping(ctx, readpref.Primary())
-	if err != nil{
-		return nil, err
-	}
+	// err = client.Ping(ctx, readpref.Primary())
+	// if err != nil{
+	// 	return nil, err
+	// }
+	
 	return client,nil
 }
 

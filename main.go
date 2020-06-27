@@ -7,6 +7,7 @@ import (
 	"os/signal"
 
 	"github.com/gofiber/fiber"
+	"github.com/joho/godotenv"
 
 	"fmt"
 	"log"
@@ -16,18 +17,23 @@ import (
 ) 
 
 func main() {
+	err := godotenv.Load("env_variables.env")
+	if err != nil{
+		fmt.Println("Error loading environment files ", err.Error())
+		panic("Could not load env file")
+	}
 	app := fiber.New()
 	repo := createRepo()
 	service := shortener.NewRedirectService(repo)
 	handler := h.NewHandler(service)
 	handler.GET(app)
 	handler.POST(app)
-
+ 
 	errs := make(chan error, 2)
 
 	go func(){
 		port := setupPort()
-		fmt.Println("Listening on port %s",port)
+		fmt.Printf("Listening on port %s",port)
 		errs <- app.Listen(port)
 	}()
 
@@ -42,19 +48,20 @@ func main() {
 
 func setupPort() string{
 	port := "8080"
-	if os.Getenv("PORT") != ""{
-		port = os.Getenv("PORT")
+	envport,ok := os.LookupEnv("PORT")
+	if ok{
+		port = envport
 	}
 	return fmt.Sprintf(":%s",port)
 }
 
 func createRepo() shortener.RedirectRepository{
-	mongoURL := os.Getenv("MONGO_URL")
-	mongoDBName := os.Getenv("MONGO_DB")
-	mongoTimeout, _ := strconv.Atoi(os.Getenv("MONGO_TIMEOUT"))
-	repo,err := mr.NewMongoRepository(mongoURL, mongoDBName, mongoTimeout)
+	mongoURL,_ := os.LookupEnv("MONGO_URL")
+	mongoDBName,_ := os.LookupEnv("MONGO_DB")
+	envTime,_ := os.LookupEnv("MONGO_TIMEOUT")
+	mongoTimeout,_ := strconv.Atoi(envTime)
+	repo,err := mr.NewMongoRepository(mongoURL, mongoDBName, mongoTimeout + 20)
 	if err != nil{
-		fmt.Print("Error associated with creating mongo repo ", err)
 		log.Fatal(err)
 	}
 	return repo
